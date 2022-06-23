@@ -83,12 +83,6 @@ window.addEventListener("keydown", (e) => {
 let gameloopI: number;
 function gameLoop() {
   socket.emit(EVENTS.CLIENT.livePosition, position);
-  /**emit object {player id, position} to the server. the server overwrites the position every time it receives
-   * a new position from the same id. server broadcasts the complete array to all connected players. on receiving the array,
-   * the client renders
-   */
-  // ctx.clearRect(0, 0, 400, 300);
-  // ctx.fillRect(position.x, position.y, size.x, size.y);
 
   switch (direction) {
     case "down":
