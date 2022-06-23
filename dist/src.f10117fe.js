@@ -6496,12 +6496,12 @@ var EVENTS = {
   connection: "connection",
   disconnect: "disconnect",
   CLIENT: {
-    sendPosition: "sendPosition",
+    sendStartingPosition: "sendStartingPosition",
     livePosition: "livePosition"
   },
   SERVER: {
     connectionReceived: "connectionReceived",
-    receivePosition: "receivePosition",
+    connectedPlayers: "connectedPlayers",
     connectedPlayersLivePosition: "connectedPlayersLivePosition"
   }
 };
@@ -6522,17 +6522,17 @@ var socket = (0, socket_io_client_1.io)("ws://localhost:3001");
 
 var activateListeners = function activateListeners() {
   socket.on(EVENTS.SERVER.connectionReceived, function () {
-    socket.emit(EVENTS.CLIENT.sendPosition, position);
+    socket.emit(EVENTS.CLIENT.sendStartingPosition, start);
   });
-  socket.on(EVENTS.SERVER.receivePosition, function (connectedPlayers) {
+  socket.on(EVENTS.SERVER.connectedPlayers, function (connectedPlayers) {
     ctx.clearRect(0, 0, 400, 300);
     connectedPlayers.forEach(function (connectedPlayer) {
       ctx.fillRect(connectedPlayer.position.x, connectedPlayer.position.y, size.x, size.y);
     });
   });
   socket.on(EVENTS.SERVER.connectedPlayersLivePosition, function (connectedPlayers) {
+    ctx.clearRect(0, 0, 400, 300);
     connectedPlayers.forEach(function (connectedPlayer) {
-      console.log("connected player with live position: ", connectedPlayer);
       ctx.fillRect(connectedPlayer.position.x, connectedPlayer.position.y, size.x, size.y);
     });
   });
@@ -6602,8 +6602,8 @@ function gameLoop() {
   gameloopI = window.requestAnimationFrame(gameLoop);
 }
 
-activateListeners(); // gameLoop();
-
+activateListeners();
+gameLoop();
 window.addEventListener("unload", function () {
   window.cancelAnimationFrame(gameloopI);
 });
@@ -6635,7 +6635,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35809" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46397" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

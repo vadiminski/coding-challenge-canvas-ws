@@ -6,12 +6,12 @@ const EVENTS = {
   connection: "connection",
   disconnect: "disconnect",
   CLIENT: {
-    sendPosition: "sendPosition",
+    sendStartingPosition: "sendStartingPosition",
     livePosition: "livePosition",
   },
   SERVER: {
     connectionReceived: "connectionReceived",
-    receivePosition: "receivePosition",
+    connectedPlayers: "connectedPlayers",
     connectedPlayersLivePosition: "connectedPlayersLivePosition",
   },
 };
@@ -32,10 +32,10 @@ const size: { x: number; y: number } = { x: 5, y: 5 };
 const socket = io("ws://localhost:3001");
 const activateListeners = () => {
   socket.on(EVENTS.SERVER.connectionReceived, () => {
-    socket.emit(EVENTS.CLIENT.sendPosition, position);
+    socket.emit(EVENTS.CLIENT.sendStartingPosition, start);
   });
   socket.on(
-    EVENTS.SERVER.receivePosition,
+    EVENTS.SERVER.connectedPlayers,
     (connectedPlayers: IConnectedPlayers[]) => {
       ctx.clearRect(0, 0, 400, 300);
       connectedPlayers.forEach((connectedPlayer: IConnectedPlayers) => {
@@ -51,8 +51,8 @@ const activateListeners = () => {
   socket.on(
     EVENTS.SERVER.connectedPlayersLivePosition,
     (connectedPlayers: IConnectedPlayers[]) => {
+      ctx.clearRect(0, 0, 400, 300);
       connectedPlayers.forEach((connectedPlayer: IConnectedPlayers) => {
-        console.log("connected player with live position: ", connectedPlayer);
         ctx.fillRect(
           connectedPlayer.position.x,
           connectedPlayer.position.y,
@@ -121,7 +121,7 @@ function gameLoop() {
   gameloopI = window.requestAnimationFrame(gameLoop);
 }
 activateListeners();
-// gameLoop();
+gameLoop();
 
 window.addEventListener("unload", () => {
   window.cancelAnimationFrame(gameloopI);

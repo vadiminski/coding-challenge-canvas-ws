@@ -10,12 +10,12 @@ const EVENTS = {
   connection: "connection",
   disconnect: "disconnect",
   CLIENT: {
-    sendPosition: "sendPosition",
+    sendStartingPosition: "sendStartingPosition",
     livePosition: "livePosition",
   },
   SERVER: {
     connectionReceived: "connectionReceived",
-    receivePosition: "receivePosition",
+    connectedPlayers: "connectedPlayers",
     connectedPlayersLivePosition: "connectedPlayersLivePosition",
   },
 };
@@ -37,24 +37,24 @@ httpServer.listen(3001, () => {
 let connectedPlayers: IConnectedPlayers[] = [];
 
 io.on(EVENTS.connection, (socket: Socket) => {
+  socket.emit(EVENTS.SERVER.connectionReceived, socket.id); // client is connected, server asks for position
+
+  socket.on(EVENTS.CLIENT.sendStartingPosition, (position: IPosition) => {
+    if (socket.id && position) {
+      connectedPlayers.push({ id: socket.id, position: position });
+    }
+    io.emit(EVENTS.SERVER.connectedPlayers, connectedPlayers);
+  });
   socket.on(EVENTS.disconnect, () => {
     const playerThatLeft = connectedPlayers.find(
       (player) => player.id === socket.id
     );
     if (playerThatLeft) {
       connectedPlayers = arrayRemove(connectedPlayers, playerThatLeft);
-      socket.broadcast.emit(EVENTS.SERVER.receivePosition, connectedPlayers);
+      io.emit(EVENTS.SERVER.connectedPlayers, connectedPlayers);
     }
   });
-  socket.emit(EVENTS.SERVER.connectionReceived, socket.id); // client is connected, server asks for position
 
-  socket.on(EVENTS.CLIENT.sendPosition, (position: IPosition) => {
-    if (socket.id && position) {
-      connectedPlayers.push({ id: socket.id, position: position });
-    }
-    socket.emit(EVENTS.SERVER.receivePosition, connectedPlayers);
-    socket.broadcast.emit(EVENTS.SERVER.receivePosition, connectedPlayers);
-  });
   socket.on(EVENTS.CLIENT.livePosition, (position: IPosition) => {
     /**look at the connectedPlayers array , find the one with the sender id and update its position*/
     connectedPlayers.forEach((connectedPlayer) => {
